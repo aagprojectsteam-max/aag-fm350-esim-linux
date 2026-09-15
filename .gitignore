@@ -1,0 +1,9 @@
+bin/
+dist/
+*.log
+*.state
+*.lock
+eid.txt
+*.eid
+activation-code.txt
+secrets/
