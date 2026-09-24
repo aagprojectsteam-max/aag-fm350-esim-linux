@@ -1,0 +1,28 @@
+--- src/mm-broadband-modem.c.aag-original	2025-11-25 07:58:16.000000000 +0200
++++ src/mm-broadband-modem.c	2026-09-24 19:18:31.115681584 +0300
+@@ -11881,9 +11881,22 @@
+     GError *error = NULL;
+ 
+     if (!MM_BROADBAND_MODEM_GET_CLASS (self)->enabling_modem_init_finish (self, res, &error)) {
+-        g_task_return_error (task, error);
+-        g_object_unref (task);
+-        return;
++        /* AAG FM350 workaround:
++         * Fibocom FM350 firmware may reject the generic V.250 ATZ command
++         * with +CME ERROR: 59 while the modem is otherwise responsive
++         * (AT OK, CFUN=1, CPIN READY). Do not let that optional generic
++         * initialization command make the whole modem enable operation fail.
++         */
++        if (g_error_matches (error,
++                             MM_MOBILE_EQUIPMENT_ERROR,
++                             MM_MOBILE_EQUIPMENT_ERROR_UNEXPECTED_DATA_VALUE)) {
++            mm_obj_warn (self, "ignoring ATZ unexpected-data-value during modem init");
++            g_clear_error (&error);
++        } else {
++            g_task_return_error (task, error);
++            g_object_unref (task);
++            return;
++        }
+     }
+ 
+     /* Specify that the modem init was run once */
