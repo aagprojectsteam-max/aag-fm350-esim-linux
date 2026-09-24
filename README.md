@@ -54,9 +54,28 @@ GNSS support for the same hardware family is maintained separately in the `fiboc
 
 The original validation was performed on an HP EliteBook 840 G11 with Fibocom FM350 / MediaTek T700 under Ubuntu. The device path and slot mapping are the values actually validated there, not universal assumptions.
 
+## 2026-09-24 end-to-end validation
+
+The same FM350/T700 platform was revalidated end-to-end on Ubuntu after a multi-layer incident investigation.
+
+Validated in the final working state:
+
+- native Linux SGP.22 profile download and installation;
+- profile enable and slot-2 use;
+- ModemManager reaching `enabled` despite FM350 rejecting generic `ATZ` with `+CME ERROR: 59` using a documented downstream workaround;
+- LTE registration reaching `home` and packet service `attached`;
+- NetworkManager establishing a working MBIM bearer after constraining data authentication to `none`;
+- assigned IPv4, gateway, carrier DNS and MTU;
+- successful ICMP and HTTPS through the cellular interface;
+- successful WWAN disconnect/reconnect with autoconnect restored.
+
+The complete sanitized incident report is in [docs/INCIDENT-2026-09-24.md](docs/INCIDENT-2026-09-24.md).
+
+The exact downstream ModemManager patch used during validation is in [patches/modemmanager-1.25.95-fm350-atz-cme59.patch](patches/modemmanager-1.25.95-fm350-atz-cme59.patch). It is a diagnostic downstream patch, not an upstream-ready solution; read the scope warning in the incident report.
+
 ## Status
 
-`v0.1.0` is the initial public-source recovery. The recovered source and documentation were sanitized before publication. Treat it as experimental on other firmware, laptops, carriers, and eUICC implementations.
+`v0.2.0` documents the 2026-09-24 end-to-end recovery and validation on the original FM350/T700 platform. The recovered source and documentation remain sanitized before publication. Treat the tooling and downstream patches as experimental on other firmware, laptops, carriers, and eUICC implementations.
 
 A fresh network-dependent Go build could not be completed inside the publication sandbox because that environment could not download the requested Go 1.26.3 toolchain. The recovered source was formatted and privacy-audited; users should build and validate it on their own target system before relying on state-changing operations.
 
