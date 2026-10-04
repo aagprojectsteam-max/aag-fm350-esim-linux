@@ -1,5 +1,16 @@
 # Changelog
 
+## 0.3.0 - 2026-10-04
+
+- Validated two operational eSIM profiles installed simultaneously on the FM350/T700 eUICC.
+- Validated additive SGP.22 installation while preserving an existing profile.
+- Documented a wedged ISD-R logical-channel state where ATR still worked.
+- Validated recovery using the existing passthrough-disable path as a normal UICC reset; no profile deletion was required.
+- Validated the safe sequence: disable the active profile, install another profile, verify both, then enable the desired profile.
+- Reconfirmed that APDU status `910B` can accompany a successful enable/disable and must be followed by profile-state readback.
+- Restored the original profile and verified `home`, `attached`, NetworkManager connected, carrier DNS, HTTP and HTTPS over WWAN.
+- Kept activation codes, QR data and subscriber/device identifiers out of the repository.
+
 ## 0.2.0 - 2026-09-24
 
 - Documented a full end-to-end FM350/T700 eSIM recovery and validation on Ubuntu.
