@@ -20,9 +20,9 @@ That can be a valid state for an empty eUICC and was accepted by the diagnostic 
 
 Do not bypass TLS verification. Check whether the network performs TLS interception/filtering and retry on a direct connection.
 
-## Profile manager refuses multiple profiles
+## Multiple profiles are installed
 
-That is intentional. The recovered helper was designed around a controlled single-profile state. Use a full LPA for multi-profile selection rather than guessing which ICCID should be changed.
+Multi-profile operation is validated on the tested FM350/T700 eUICC. Preserve existing profiles. Temporarily disable the active profile, install the additional profile, verify exactly one profile was added, then explicitly enable the desired profile. Do not delete a working profile merely to make the eUICC empty.
 
 
 ## FM350 loops `disabled -> enabling -> disabled` with `Unexpected data value`
@@ -109,3 +109,16 @@ sudo mbimcli -d /dev/wwan0mbim0 --device-open-proxy --query-device-caps
 Disable NetworkManager WWAN autoconnect during controlled registration/bearer experiments. Parallel `nmcli`, `mmcli` and automatic retries can create misleading timeouts and multiple stale bearers.
 
 Restore normal autoconnect only after the controlled test is complete.
+
+
+## ATR works but opening eUICC ISD-R fails with MBIM failure
+
+This was reproduced after repeated eUICC management operations. Passthrough was disabled and ATR was readable, but the ISD-R logical channel could not be opened. The eUICC was alive; only the management channel was wedged.
+
+On the tested modem, running the existing passthrough helper with disable while passthrough was already disabled performed a normal UICC reset and restored ISD-R access without deleting profiles. Re-list profiles after the reset before making another state change.
+
+## Adding another eSIM profile safely
+
+The validated workflow is: list existing profiles; recover ISD-R with the normal UICC reset if needed; disable the currently enabled profile without deleting it; install the new profile; verify the profile count increased by exactly one; enable the desired profile; then restore ModemManager/NetworkManager and validate registration and data.
+
+The final tested state contained two operational profiles simultaneously, with one enabled and one disabled.
