@@ -73,9 +73,30 @@ The complete sanitized incident report is in [docs/INCIDENT-2026-09-24.md](docs/
 
 The exact downstream ModemManager patch used during validation is in [patches/modemmanager-1.25.95-fm350-atz-cme59.patch](patches/modemmanager-1.25.95-fm350-atz-cme59.patch). It is a diagnostic downstream patch, not an upstream-ready solution; read the scope warning in the incident report.
 
+## Multi-profile eSIM validation
+
+The tested FM350/T700 eUICC is now validated with **two operational profiles installed at the same time**. The existing profile was preserved, temporarily disabled, a second SGP.22 profile was installed, and the original profile was enabled again afterward.
+
+Validated sequence:
+
+```text
+existing profile enabled
+-> normal UICC reset if ISD-R access is wedged
+-> disable existing profile (do not delete)
+-> download/install another profile
+-> verify exactly one profile was added
+-> explicitly enable the desired profile
+-> restore ModemManager/NetworkManager
+-> validate registration and cellular data
+```
+
+A key finding was that ATR can remain readable while the ISD-R logical channel is wedged. On the tested modem, the existing passthrough-disable operation, even when passthrough was already disabled, performed a normal UICC reset and restored ISD-R access without deleting profiles.
+
+Profile switching may report APDU status `910B` even when the requested state change succeeded. Always verify by re-listing profiles after the eUICC refresh.
+
 ## Status
 
-`v0.2.0` documents the 2026-09-24 end-to-end recovery and validation on the original FM350/T700 platform. The recovered source and documentation remain sanitized before publication. Treat the tooling and downstream patches as experimental on other firmware, laptops, carriers, and eUICC implementations.
+`v0.3.0` adds validated multi-profile operation to the documented FM350/T700 recovery workflow. The recovered source and documentation remain sanitized before publication. Treat the tooling and downstream patches as experimental on other firmware, laptops, carriers, and eUICC implementations.
 
 A fresh network-dependent Go build could not be completed inside the publication sandbox because that environment could not download the requested Go 1.26.3 toolchain. The recovered source was formatted and privacy-audited; users should build and validate it on their own target system before relying on state-changing operations.
 
